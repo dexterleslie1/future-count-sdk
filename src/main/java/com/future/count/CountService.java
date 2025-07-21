@@ -103,7 +103,9 @@ public class CountService {
      * @throws BusinessException
      */
     public long getCountByFlag(String flag) throws BusinessException {
-        return api.getCountByFlag(flag).getData();
+         ObjectResponse<Long> response = api.getCountByFlag(flag);
+         Utils.throwBusinessExceptionIfFailed(response);
+         return response.getData();
     }
 
     /**
@@ -113,6 +115,7 @@ public class CountService {
      * @throws BusinessException
      */
     public void updateIncreaseCount(List<IncreaseCountDTO> increaseCountDTOList) throws BusinessException {
-        api.updateIncreaseCount(increaseCountDTOList);
+        ObjectResponse<String> response = api.updateIncreaseCount(increaseCountDTOList);
+        Utils.throwBusinessExceptionIfFailed(response);
     }
 }

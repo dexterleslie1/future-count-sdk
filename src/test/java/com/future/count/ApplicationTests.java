@@ -32,7 +32,7 @@ public class ApplicationTests {
         List<IncreaseCountDTO> increaseCountDTOList = new ArrayList<IncreaseCountDTO>() {{
             IncreaseCountDTO increaseCountDTO = new IncreaseCountDTO(idemponentIdPrefix1, flag);
             this.add(increaseCountDTO);
-            increaseCountDTO = new IncreaseCountDTO(idemponentIdPrefix2,flag);
+            increaseCountDTO = new IncreaseCountDTO(idemponentIdPrefix2, flag);
             this.add(increaseCountDTO);
         }};
         countService.updateIncreaseCount(increaseCountDTOList);
@@ -55,5 +55,23 @@ public class ApplicationTests {
         countService.updateIncreaseCount(increaseCountDTOList);
         count = countService.getCountByFlag(flag);
         Assertions.assertEquals(countOrigin + 5, count);
+
+
+        // region 测试未初始化 flag
+
+        String flagNotExists = "flagNotExists";
+        increaseCountDTOList = new ArrayList<IncreaseCountDTO>() {{
+            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
+            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
+            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
+        }};
+        try {
+            countService.updateIncreaseCount(increaseCountDTOList);
+            Assertions.fail();
+        } catch (BusinessException ex) {
+            Assertions.assertEquals("未初始化 flag flagNotExists 计数器，请调用 /api/v1/count/init 接口先初始化", ex.getMessage());
+        }
+
+        // endregion
     }
 }
