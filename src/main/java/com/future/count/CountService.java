@@ -65,7 +65,12 @@ public class CountService {
             boolean exception = false;
             for (String flag : flagList) {
                 try {
-                    api.init(flag);
+                    ObjectResponse<String> response = api.init(flag);
+                    if (response.getErrorCode() > 0) {
+                        BusinessException ex = new BusinessException(response.getErrorCode(), response.getErrorMessage());
+                        ex.setData(response.getData());
+                        throw ex;
+                    }
                     if (log.isDebugEnabled())
                         log.debug("成功调用计数器服务 init 方法，flag {}", flag);
                 } catch (Exception ex) {
@@ -103,9 +108,9 @@ public class CountService {
      * @throws BusinessException
      */
     public long getCountByFlag(String flag) throws BusinessException {
-         ObjectResponse<Long> response = api.getCountByFlag(flag);
-         Utils.throwBusinessExceptionIfFailed(response);
-         return response.getData();
+        ObjectResponse<Long> response = api.getCountByFlag(flag);
+        Utils.throwBusinessExceptionIfFailed(response);
+        return response.getData();
     }
 
     /**
