@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.github.dexterleslie1</groupId>
             <artifactId>future-common</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3</version>
         </dependency>
 
         <dependency>

@@ -1,20 +1,19 @@
 package com.future.count;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.future.common.exception.BusinessException;
+import com.future.common.feign.CustomizeErrorDecoder;
+import com.future.common.feign.FeignUtil;
 import com.future.common.http.ObjectResponse;
-import com.future.common.json.JSONUtil;
-import feign.*;
-import feign.codec.ErrorDecoder;
+import feign.Feign;
+import feign.Logger;
+import feign.Request;
+import feign.Retryer;
 import feign.form.FormEncoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.util.Assert;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -43,19 +42,7 @@ public class CountService {
                 .logger(new Logger.ErrorLogger()).logLevel(Logger.Level.NONE)
                 // ErrorDecoder
                 // https://cloud.tencent.com/developer/article/1588501
-                .errorDecoder(new ErrorDecoder() {
-                    @Override
-                    public Exception decode(String methodKey, Response response) {
-                        try {
-                            String json = IOUtils.toString(response.body().asInputStream(), StandardCharsets.UTF_8);
-                            ObjectResponse<String> responseError = JSONUtil.ObjectMapperInstance.readValue(json, new TypeReference<ObjectResponse<String>>() {
-                            });
-                            return new BusinessException(responseError.getErrorCode(), responseError.getErrorMessage());
-                        } catch (IOException e) {
-                            return e;
-                        }
-                    }
-                })
+                .errorDecoder(new CustomizeErrorDecoder())
                 .target(Api.class, "http://" + host + ":" + port);
 
         // 调用计数器服务 init 方法以初始化对应的 flag
@@ -109,7 +96,7 @@ public class CountService {
      */
     public long getCountByFlag(String flag) throws BusinessException {
         ObjectResponse<Long> response = api.getCountByFlag(flag);
-        Utils.throwBusinessExceptionIfFailed(response);
+        FeignUtil.throwBizExceptionIfResponseFailed(response);
         return response.getData();
     }
 
@@ -121,6 +108,6 @@ public class CountService {
      */
     public void updateIncreaseCount(List<IncreaseCountDTO> increaseCountDTOList) throws BusinessException {
         ObjectResponse<String> response = api.updateIncreaseCount(increaseCountDTOList);
-        Utils.throwBusinessExceptionIfFailed(response);
+        FeignUtil.throwBizExceptionIfResponseFailed(response);
     }
 }
