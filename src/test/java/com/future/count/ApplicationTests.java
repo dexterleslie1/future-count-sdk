@@ -1,5 +1,6 @@
 package com.future.count;
 
+import cn.hutool.core.util.RandomUtil;
 import com.future.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -9,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @SpringBootTest(classes = Application.class)
 @Slf4j
@@ -27,12 +27,14 @@ public class ApplicationTests {
         String flag = "order";
 
         long countOrigin = countService.getCountByFlag(flag);
-        String idemponentIdPrefix1 = UUID.randomUUID().toString();
-        String idemponentIdPrefix2 = UUID.randomUUID().toString();
+        /*String idemponentIdPrefix1 = UUID.randomUUID().toString();
+        String idemponentIdPrefix2 = UUID.randomUUID().toString();*/
+        Long idempotentId1 = RandomUtil.randomLong(1, Long.MAX_VALUE);
+        Long idempotentId2 = RandomUtil.randomLong(1, Long.MAX_VALUE);
         List<IncreaseCountDTO> increaseCountDTOList = new ArrayList<IncreaseCountDTO>() {{
-            IncreaseCountDTO increaseCountDTO = new IncreaseCountDTO(idemponentIdPrefix1, flag);
+            IncreaseCountDTO increaseCountDTO = new IncreaseCountDTO(idempotentId1, flag);
             this.add(increaseCountDTO);
-            increaseCountDTO = new IncreaseCountDTO(idemponentIdPrefix2, flag);
+            increaseCountDTO = new IncreaseCountDTO(idempotentId2, flag);
             this.add(increaseCountDTO);
         }};
         countService.updateIncreaseCount(increaseCountDTOList);
@@ -46,11 +48,11 @@ public class ApplicationTests {
 
         // 测试有部分 idempotentId 已经递增过情况
         increaseCountDTOList = new ArrayList<IncreaseCountDTO>() {{
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flag));
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flag));
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flag));
-            this.add(new IncreaseCountDTO(idemponentIdPrefix1, flag));
-            this.add(new IncreaseCountDTO(idemponentIdPrefix2, flag));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flag));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flag));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flag));
+            this.add(new IncreaseCountDTO(idempotentId1, flag));
+            this.add(new IncreaseCountDTO(idempotentId2, flag));
         }};
         countService.updateIncreaseCount(increaseCountDTOList);
         count = countService.getCountByFlag(flag);
@@ -61,9 +63,9 @@ public class ApplicationTests {
 
         String flagNotExists = "flagNotExists";
         increaseCountDTOList = new ArrayList<IncreaseCountDTO>() {{
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
-            this.add(new IncreaseCountDTO(UUID.randomUUID().toString(), flagNotExists));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flagNotExists));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flagNotExists));
+            this.add(new IncreaseCountDTO(RandomUtil.randomLong(1, Long.MAX_VALUE), flagNotExists));
         }};
         try {
             countService.updateIncreaseCount(increaseCountDTOList);
